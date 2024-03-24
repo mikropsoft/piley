@@ -6,6 +6,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.dk.piley.model.migration.MIGRATION_2_3
 import com.dk.piley.model.pile.Pile
 import com.dk.piley.model.pile.PileDao
 import com.dk.piley.model.task.Task
@@ -23,10 +24,6 @@ const val DATABASE_NAME = "piley-db"
         AutoMigration(
             from = 1,
             to = 2
-        ),
-        AutoMigration(
-            from = 2,
-            to = 3
         )
     ],
     version = 3,
@@ -53,6 +50,7 @@ abstract class PileDatabase : RoomDatabase() {
             return Room
                 .databaseBuilder(context, PileDatabase::class.java, DATABASE_NAME)
                 .setJournalMode(JournalMode.TRUNCATE)
+                .addMigrations(MIGRATION_2_3)
                 .build()
         }
     }

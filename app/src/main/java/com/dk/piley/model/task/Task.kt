@@ -48,5 +48,7 @@ data class Task(
     val recurringFrequency: Int = 1,
     val status: TaskStatus = TaskStatus.DEFAULT,
     @ColumnInfo(defaultValue = "0")
-    val averageCompletionTimeInHours: Long = 0
+    val averageCompletionTimeInHours: Long = 0,
+    @ColumnInfo(defaultValue = "0")
+    val positionInPile: Int = 0
 )
