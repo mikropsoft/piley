@@ -28,4 +28,15 @@ class Converters {
         if (instantListString == "[]" || instantListString.isNullOrBlank()) return emptyList()
         return instantListString.drop(1).dropLast(1).split(", ").map { Instant.parse(it) }
     }
+
+    @TypeConverter
+    fun longListToString(intList: List<Long>?): String? {
+        return intList?.toString()
+    }
+
+    @TypeConverter
+    fun fromStringToLongList(intListString: String?): List<Long> {
+        if (intListString == "[]" || intListString.isNullOrBlank()) return emptyList()
+        return intListString.drop(1).dropLast(1).split(", ").map { it.toLong() }
+    }
 }

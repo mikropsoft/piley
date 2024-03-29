@@ -29,4 +29,5 @@ data class Pile(
     val modifiedAt: Instant = Instant.now(),
     @ColumnInfo(defaultValue = "0")
     val deletedCount: Int = 0,
+    val taskOrder: List<Long> = emptyList(),
 )

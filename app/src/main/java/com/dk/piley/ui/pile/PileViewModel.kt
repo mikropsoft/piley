@@ -44,6 +44,10 @@ class PileViewModel @Inject constructor(
     val selectedPileIndex: StateFlow<Int>
         get() = _selectedPileIndex
 
+    private val _taskOrder = MutableStateFlow<List<Long>>(emptyList())
+    val taskOrder: StateFlow<List<Long>>
+        get() = _taskOrder
+
     private var differsFromSelected = false
 
     init {
@@ -83,6 +87,8 @@ class PileViewModel @Inject constructor(
                         // set index if needed
                         val selectedPileId =
                             idTitleList.getOrNull(index)?.first ?: user.selectedPileId
+                        // set task order
+
                         // start mapping pile to view state
                         pilesWithTasks
                             .find { it.pile.pileId == selectedPileId }
