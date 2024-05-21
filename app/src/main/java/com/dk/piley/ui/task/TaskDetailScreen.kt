@@ -9,12 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.BottomDrawerValue
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.rememberBottomDrawerState
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -94,10 +95,7 @@ fun TaskDetailScreen(
  * @param onCancelReminder on cancel reminder action
  * @param permissionState notification permission state
  */
-@OptIn(
-    ExperimentalMaterialApi::class,
-    ExperimentalPermissionsApi::class
-)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDetailScreen(
     modifier: Modifier = Modifier,
@@ -118,19 +116,24 @@ fun TaskDetailScreen(
 ) {
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
-    val drawerState = rememberBottomDrawerState(initialValue = BottomDrawerValue.Closed)
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberStandardBottomSheetState(
+            SheetValue.Hidden,
+            skipHiddenState = false
+        )
+    )
     val scrollState = rememberScrollState()
 
     // notification permission
     var rationaleOpen by remember { mutableStateOf(false) }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && drawerState.isOpen) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && bottomSheetScaffoldState.bottomSheetState.hasExpandedState) {
         RequestNotificationPermissionDialog(rationaleOpen) {
             rationaleOpen = false
         }
     }
 
     AddReminderDrawer(
-        drawerState = drawerState,
+        bottomSheetScaffoldState = bottomSheetScaffoldState,
         onAddReminder = onAddReminder,
         onDeleteReminder = onCancelReminder,
         initialDate = viewState.task.reminder?.toLocalDateTime(),
@@ -170,7 +173,7 @@ fun TaskDetailScreen(
                 )
                 ReminderInfo(
                     reminderDateTimeText = viewState.reminderDateTimeText,
-                    onAddReminder = { scope.launch { drawerState.expand() } },
+                    onAddReminder = { scope.launch { bottomSheetScaffoldState.bottomSheetState.expand() } },
                     isRecurring = viewState.task.isRecurring,
                     recurringTimeRange = viewState.task.recurringTimeRange,
                     recurringFrequency = viewState.task.recurringFrequency

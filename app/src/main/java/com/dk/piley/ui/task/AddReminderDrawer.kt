@@ -13,20 +13,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomDrawer
-import androidx.compose.material.BottomDrawerState
-import androidx.compose.material.BottomDrawerValue
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -42,7 +44,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import com.dk.piley.R
 import com.dk.piley.model.task.RecurringTimeRange
 import com.dk.piley.ui.common.LocalDim
@@ -67,10 +68,9 @@ import java.time.LocalTime
 
 /**
  * Bottom sheet drawer for adding or editing reminders
- * TODO: replace with [BottomSheetScaffold] (material 3)
  *
  * @param modifier generic modifier
- * @param drawerState bottom drawer state
+ * @param bottomSheetScaffoldState bottom sheet scaffold state
  * @param initialDate initial reminder date time
  * @param isRecurring whether reminder is recurring
  * @param recurringTimeRange time range for recurring reminders
@@ -80,11 +80,14 @@ import java.time.LocalTime
  * @param permissionState permission state for notifications
  * @param content reminder drawer content
  */
-@OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class)
+@OptIn(
+    ExperimentalPermissionsApi::class,
+    ExperimentalMaterial3Api::class
+)
 @Composable
 fun AddReminderDrawer(
     modifier: Modifier = Modifier,
-    drawerState: BottomDrawerState,
+    bottomSheetScaffoldState: BottomSheetScaffoldState,
     initialDate: LocalDateTime? = null,
     isRecurring: Boolean = false,
     recurringTimeRange: RecurringTimeRange = RecurringTimeRange.DAILY,
@@ -98,11 +101,11 @@ fun AddReminderDrawer(
     },
     content: @Composable () -> Unit
 ) {
-    BottomDrawer(
-        drawerContent = {
+    BottomSheetScaffold(
+        sheetContent = {
             AddReminderContent(
                 modifier = modifier,
-                drawerState = drawerState,
+                bottomSheetScaffoldState = bottomSheetScaffoldState,
                 onAddReminder = onAddReminder,
                 onDeleteReminder = onDeleteReminder,
                 initialDateTime = initialDate,
@@ -112,10 +115,10 @@ fun AddReminderDrawer(
                 permissionState = permissionState
             )
         },
-        gesturesEnabled = !drawerState.isClosed,
-        drawerState = drawerState,
-        drawerBackgroundColor = MaterialTheme.colorScheme.surface,
-        drawerShape = RoundedCornerShape(
+        sheetSwipeEnabled = bottomSheetScaffoldState.bottomSheetState.hasExpandedState,
+        scaffoldState = bottomSheetScaffoldState,
+        containerColor = MaterialTheme.colorScheme.surface,
+        sheetShape = RoundedCornerShape(
             topStart = LocalDim.current.veryLarge,
             topEnd = LocalDim.current.veryLarge
         ),
@@ -128,7 +131,7 @@ fun AddReminderDrawer(
  * Add/edit reminder content
  *
  * @param modifier generic modifier
- * @param drawerState bottom drawer state
+ * @param bottomSheetScaffoldState bottom sheet scaffold state
  * @param onAddReminder on add or update reminder
  * @param onDeleteReminder on delete reminder
  * @param initialDateTime initial reminder date time
@@ -138,12 +141,13 @@ fun AddReminderDrawer(
  * @param permissionState permission state for notifications
  */
 @OptIn(
-    ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class
+    ExperimentalPermissionsApi::class,
+    ExperimentalMaterial3Api::class
 )
 @Composable
 fun AddReminderContent(
     modifier: Modifier = Modifier,
-    drawerState: BottomDrawerState,
+    bottomSheetScaffoldState: BottomSheetScaffoldState,
     onAddReminder: (ReminderState) -> Unit,
     onDeleteReminder: () -> Unit = {},
     initialDateTime: LocalDateTime? = null,
@@ -292,7 +296,7 @@ fun AddReminderContent(
                         )
                     }
                     coroutineScope.launch {
-                        drawerState.close()
+                        bottomSheetScaffoldState.bottomSheetState.hide()
                     }
                 }
             ) {
@@ -364,62 +368,63 @@ data class ReminderState(
     val recurringFrequency: Int,
 )
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 fun AddReminderDrawerPreview() {
     PileyTheme(useDarkTheme = true) {
         Surface {
-            val drawerState = BottomDrawerState(
-                BottomDrawerValue.Expanded, density = Density(
-                    LocalContext.current
-                )
+            val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+                rememberStandardBottomSheetState(SheetValue.Expanded)
             )
             AddReminderDrawer(
                 content = {
                     Column(modifier = Modifier.fillMaxSize()) {
                         Text("some text here")
                     }
-                }, drawerState = drawerState, permissionState = null
+                },
+                bottomSheetScaffoldState = bottomSheetScaffoldState,
+                permissionState = null
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class)
+@OptIn(
+    ExperimentalPermissionsApi::class,
+    ExperimentalMaterial3Api::class
+)
 @Preview(showBackground = true)
 @Composable
 fun EditReminderDrawerPreview() {
     PileyTheme(useDarkTheme = true) {
         Surface {
             val initialDateTime = LocalDateTime.now(utcZoneId)
-            val drawerState = BottomDrawerState(
-                BottomDrawerValue.Expanded, density = Density(
-                    LocalContext.current
-                )
+            val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+                rememberStandardBottomSheetState(SheetValue.Expanded)
             )
             AddReminderDrawer(
                 initialDate = initialDateTime, content = {
                     Column(modifier = Modifier.fillMaxSize()) {
                         Text("some text here")
                     }
-                }, drawerState = drawerState, permissionState = null
+                },
+                bottomSheetScaffoldState = bottomSheetScaffoldState,
+                permissionState = null
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun EditReminderDrawerRecurringPreview() {
     PileyTheme(useDarkTheme = true) {
         Surface {
             val initialDateTime = LocalDateTime.now(utcZoneId)
-            val drawerState = BottomDrawerState(
-                BottomDrawerValue.Expanded, density = Density(
-                    LocalContext.current
-                )
+            val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+                rememberStandardBottomSheetState(SheetValue.Expanded)
             )
             AddReminderDrawer(
                 initialDate = initialDateTime,
@@ -429,7 +434,7 @@ fun EditReminderDrawerRecurringPreview() {
                     }
                 },
                 isRecurring = true,
-                drawerState = drawerState,
+                bottomSheetScaffoldState = bottomSheetScaffoldState,
                 permissionState = null
             )
         }
